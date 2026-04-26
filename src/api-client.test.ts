@@ -99,4 +99,38 @@ describe("createApiClient", () => {
     await expect(client.get("/projects/1")).rejects.toThrow(/429/);
     expect(mockFetch).toHaveBeenCalledTimes(4); // 1 initial + 3 retries
   });
+
+  it("falls back to exponential backoff when Retry-After is malformed", async () => {
+    const okResponse = { ok: true, json: () => Promise.resolve({ id: 1 }) };
+    const rateLimited = {
+      ok: false,
+      status: 429,
+      statusText: "Too Many Requests",
+      headers: { get: (h: string) => (h === "Retry-After" ? "not-a-number" : null) },
+      text: () => Promise.resolve("rate limited"),
+    };
+    const mockFetch = vi
+      .fn()
+      .mockResolvedValueOnce(rateLimited)
+      .mockResolvedValueOnce(okResponse);
+    vi.stubGlobal("fetch", mockFetch);
+
+    // Patch setTimeout to fire immediately so the test doesn't actually wait 1s
+    const setTimeoutSpy = vi
+      .spyOn(global, "setTimeout")
+      .mockImplementation(((cb: () => void) => {
+        cb();
+        return 0 as unknown as NodeJS.Timeout;
+      }) as typeof setTimeout);
+
+    const client = createApiClient(config);
+    const result = await client.get("/projects/1");
+
+    expect(result).toEqual({ id: 1 });
+    expect(mockFetch).toHaveBeenCalledTimes(2);
+    // First retry → exponent 0 → INITIAL_DELAY_MS = 1000ms (not NaN, not 0)
+    expect(setTimeoutSpy).toHaveBeenCalledWith(expect.any(Function), 1000);
+
+    setTimeoutSpy.mockRestore();
+  });
 });

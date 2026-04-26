@@ -20,8 +20,9 @@ async function fetchWithRetry(
 
   if (response.status === 429 && retries > 0) {
     const retryAfter = response.headers.get("Retry-After");
-    const delay = retryAfter
-      ? parseInt(retryAfter, 10) * 1000
+    const retryAfterSec = retryAfter ? parseInt(retryAfter, 10) : NaN;
+    const delay = Number.isFinite(retryAfterSec)
+      ? retryAfterSec * 1000
       : INITIAL_DELAY_MS * Math.pow(2, MAX_RETRIES - retries);
     await sleep(delay);
     return fetchWithRetry(url, init, retries - 1);
