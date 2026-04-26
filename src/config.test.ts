@@ -2,15 +2,18 @@ import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import { getConfig } from "./config.js";
 
 describe("getConfig", () => {
-  const originalEnv = process.env.COMPANYCAM_API_KEY;
+  let originalEnv: string | undefined;
 
   beforeEach(() => {
+    originalEnv = process.env.COMPANYCAM_API_KEY;
     delete process.env.COMPANYCAM_API_KEY;
   });
 
   afterEach(() => {
     if (originalEnv !== undefined) {
       process.env.COMPANYCAM_API_KEY = originalEnv;
+    } else {
+      delete process.env.COMPANYCAM_API_KEY;
     }
   });
 
