@@ -1,5 +1,13 @@
 # Changelog
 
+## [1.1.0](https://github.com/opsrev/companycam-cli/compare/v1.0.0...v1.1.0) (2026-05-01)
+
+
+### Features
+
+* **photos:** default to last 7 days, add --start/--end range filters ([f21ac45](https://github.com/opsrev/companycam-cli/commit/f21ac45a6597129139c8d440c8462fcaea615d6d))
+* **photos:** default to last 7 days, add --start/--end range filters ([36eaeb3](https://github.com/opsrev/companycam-cli/commit/36eaeb37caf0df1c7b22e9537866584e69faaac2))
+
 ## 1.0.0 (2026-04-26)
 
 
