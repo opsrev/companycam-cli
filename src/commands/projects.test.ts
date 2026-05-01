@@ -133,7 +133,21 @@ describe("projects commands", () => {
   });
 
   describe("photos", () => {
-    it("calls /projects/:id/photos with default limit 25", async () => {
+    const NOW_MS = Date.UTC(2026, 4, 1, 12, 0, 0);
+    const SEVEN_DAYS_AGO_SEC = Math.floor(
+      (NOW_MS - 7 * 24 * 60 * 60 * 1000) / 1000
+    );
+
+    beforeEach(() => {
+      vi.useFakeTimers();
+      vi.setSystemTime(new Date(NOW_MS));
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("defaults to photos from the last 7 days", async () => {
       const client: ApiClient = {
         get: vi.fn().mockResolvedValue([{ id: "p1" }]),
       };
@@ -143,7 +157,15 @@ describe("projects commands", () => {
 
       expect(client.get).toHaveBeenCalledWith(
         "/projects/42/photos",
-        expect.objectContaining({ page: "1", per_page: "50" })
+        expect.objectContaining({
+          page: "1",
+          per_page: "50",
+          start_date: String(SEVEN_DAYS_AGO_SEC),
+        })
+      );
+      expect(client.get).toHaveBeenCalledWith(
+        "/projects/42/photos",
+        expect.not.objectContaining({ end_date: expect.anything() })
       );
       expect(logSpy).toHaveBeenCalledWith(JSON.stringify([{ id: "p1" }]));
     });
@@ -193,6 +215,98 @@ describe("projects commands", () => {
 
       const printed = JSON.parse(logSpy.mock.calls[0][0] as string);
       expect(printed).toHaveLength(60);
+    });
+
+    it("--start overrides default and converts ISO 8601 to unix seconds", async () => {
+      const client: ApiClient = { get: vi.fn().mockResolvedValue([]) };
+      const program = buildProgram(client);
+
+      await program.parseAsync([
+        "node",
+        "test",
+        "projects",
+        "photos",
+        "42",
+        "--start",
+        "2026-01-15T00:00:00Z",
+      ]);
+
+      const expected = String(Math.floor(Date.UTC(2026, 0, 15) / 1000));
+      expect(client.get).toHaveBeenCalledWith(
+        "/projects/42/photos",
+        expect.objectContaining({ start_date: expected })
+      );
+      expect(client.get).toHaveBeenCalledWith(
+        "/projects/42/photos",
+        expect.not.objectContaining({ end_date: expect.anything() })
+      );
+    });
+
+    it("--end alone disables the 7-day default", async () => {
+      const client: ApiClient = { get: vi.fn().mockResolvedValue([]) };
+      const program = buildProgram(client);
+
+      await program.parseAsync([
+        "node",
+        "test",
+        "projects",
+        "photos",
+        "42",
+        "--end",
+        "2026-04-01T00:00:00Z",
+      ]);
+
+      const expected = String(Math.floor(Date.UTC(2026, 3, 1) / 1000));
+      expect(client.get).toHaveBeenCalledWith(
+        "/projects/42/photos",
+        expect.objectContaining({ end_date: expected })
+      );
+      expect(client.get).toHaveBeenCalledWith(
+        "/projects/42/photos",
+        expect.not.objectContaining({ start_date: expect.anything() })
+      );
+    });
+
+    it("--start and --end combine into a range", async () => {
+      const client: ApiClient = { get: vi.fn().mockResolvedValue([]) };
+      const program = buildProgram(client);
+
+      await program.parseAsync([
+        "node",
+        "test",
+        "projects",
+        "photos",
+        "42",
+        "--start",
+        "2026-01-01T00:00:00Z",
+        "--end",
+        "2026-02-01T00:00:00Z",
+      ]);
+
+      expect(client.get).toHaveBeenCalledWith(
+        "/projects/42/photos",
+        expect.objectContaining({
+          start_date: String(Math.floor(Date.UTC(2026, 0, 1) / 1000)),
+          end_date: String(Math.floor(Date.UTC(2026, 1, 1) / 1000)),
+        })
+      );
+    });
+
+    it("rejects invalid ISO 8601 timestamps", async () => {
+      const client: ApiClient = { get: vi.fn() };
+      const program = buildProgram(client);
+
+      await expect(
+        program.parseAsync([
+          "node",
+          "test",
+          "projects",
+          "photos",
+          "42",
+          "--start",
+          "not-a-date",
+        ])
+      ).rejects.toThrow(/Invalid ISO 8601/);
     });
   });
 });
