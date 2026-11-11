@@ -84,7 +84,7 @@ export function registerProjectsCommands(
     });
 
   for (const [name, noun] of [
-    ["comments", "comments (project feed and photo comments)"],
+    ["comments", "comments (project-level comments have commentable_type \"Location\")"],
     ["documents", "documents (uploaded files and reports)"],
   ] as const) {
     projects
