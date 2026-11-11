@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.0](https://github.com/opsrev/companycam-cli/compare/v1.1.0...v1.2.0) (2026-11-11)
+
+
+### Features
+
+* **projects:** list project comments and documents ([#4](https://github.com/opsrev/companycam-cli/issues/4)) ([a2816a4](https://github.com/opsrev/companycam-cli/commit/a2816a47101943fb7b367c585865a1845da41c3b))
+
 ## [1.1.0](https://github.com/opsrev/companycam-cli/compare/v1.0.0...v1.1.0) (2026-05-01)
 
 
