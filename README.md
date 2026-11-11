@@ -59,7 +59,7 @@ Flags:
 
 ### `projects comments <projectId>`
 
-List comments for a project: the project feed and comments on its photos. Each comment carries `content`, `creator_name`, `commentable_type`, `commentable_id` and `created_at`.
+List comments for a project. Each comment carries `content`, `creator_name`, `commentable_type`, `commentable_id` and `created_at` (epoch seconds). A project-level comment has `commentable_type` `"Location"`.
 
 ```bash
 companycam projects comments 123456
