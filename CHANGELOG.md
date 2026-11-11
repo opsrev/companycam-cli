@@ -1,5 +1,12 @@
 # Changelog
 
+## [1.2.1](https://github.com/opsrev/companycam-cli/compare/v1.2.0...v1.2.1) (2026-11-11)
+
+
+### Bug Fixes
+
+* **projects:** describe comment types as the API returns them ([#6](https://github.com/opsrev/companycam-cli/issues/6)) ([694d272](https://github.com/opsrev/companycam-cli/commit/694d27221e7d81fe2a481a1ccbf0d07ad77a980e))
+
 ## [1.2.0](https://github.com/opsrev/companycam-cli/compare/v1.1.0...v1.2.0) (2026-11-11)
 
 
