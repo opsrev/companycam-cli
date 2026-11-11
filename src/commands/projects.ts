@@ -82,6 +82,32 @@ export function registerProjectsCommands(
       );
       console.log(JSON.stringify(result));
     });
+
+  for (const [name, noun] of [
+    ["comments", "comments (project feed and photo comments)"],
+    ["documents", "documents (uploaded files and reports)"],
+  ] as const) {
+    projects
+      .command(name)
+      .argument("<projectId>", "Project ID")
+      .description(`List ${noun} for a project (paginated)`)
+      .option("--limit <n>", "Max total results (default: 25)")
+      .option("--all", `Fetch all ${name} for the project`)
+      .action(async (projectId: string, opts) => {
+        const limit = opts.all
+          ? Infinity
+          : opts.limit
+          ? parseInt(opts.limit, 10)
+          : DEFAULT_LIMIT;
+        const result = await paginate(
+          getClient(),
+          `/projects/${projectId}/${name}`,
+          {},
+          limit
+        );
+        console.log(JSON.stringify(result));
+      });
+  }
 }
 
 function toUnixSeconds(iso: string): number {
