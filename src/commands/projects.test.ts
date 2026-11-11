@@ -309,4 +309,47 @@ describe("projects commands", () => {
       ).rejects.toThrow(/Invalid ISO 8601/);
     });
   });
+  describe.each(["comments", "documents"])("%s", (name) => {
+    it(`calls /projects/:id/${name} with default limit 25`, async () => {
+      const rows = Array.from({ length: 30 }, (_, id) => ({ id }));
+      const client: ApiClient = { get: vi.fn().mockResolvedValue(rows) };
+      const program = buildProgram(client);
+
+      await program.parseAsync(["node", "test", "projects", name, "42"]);
+
+      expect(client.get).toHaveBeenCalledWith(
+        `/projects/42/${name}`,
+        { page: "1", per_page: "50" }
+      );
+      expect(logSpy).toHaveBeenCalledWith(JSON.stringify(rows.slice(0, 25)));
+    });
+
+    it("honors --limit", async () => {
+      const client: ApiClient = {
+        get: vi.fn().mockResolvedValue([{ id: 1 }, { id: 2 }, { id: 3 }]),
+      };
+      const program = buildProgram(client);
+
+      await program.parseAsync(["node", "test", "projects", name, "42", "--limit", "2"]);
+
+      expect(logSpy).toHaveBeenCalledWith(JSON.stringify([{ id: 1 }, { id: 2 }]));
+    });
+
+    it("pages through everything with --all", async () => {
+      const full = Array.from({ length: 50 }, (_, id) => ({ id }));
+      const client: ApiClient = {
+        get: vi.fn().mockResolvedValueOnce(full).mockResolvedValueOnce([{ id: 50 }]),
+      };
+      const program = buildProgram(client);
+
+      await program.parseAsync(["node", "test", "projects", name, "42", "--all"]);
+
+      expect(client.get).toHaveBeenCalledTimes(2);
+      expect(client.get).toHaveBeenLastCalledWith(
+        `/projects/42/${name}`,
+        { page: "2", per_page: "50" }
+      );
+      expect(logSpy).toHaveBeenCalledWith(JSON.stringify([...full, { id: 50 }]));
+    });
+  });
 });

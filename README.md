@@ -57,6 +57,32 @@ Flags:
 - `--limit <n>` — max total photos (default: 25)
 - `--all` — fetch every photo for the project
 
+### `projects comments <projectId>`
+
+List comments for a project: the project feed and comments on its photos. Each comment carries `content`, `creator_name`, `commentable_type`, `commentable_id` and `created_at`.
+
+```bash
+companycam projects comments 123456
+companycam projects comments 123456 --all
+```
+
+Flags:
+- `--limit <n>` — max total comments (default: 25)
+- `--all` — fetch every comment for the project
+
+### `projects documents <projectId>`
+
+List documents uploaded to a project (reports, PDFs and other files). Each document carries `name`, `url`, `content_type`, `byte_size`, `creator_name` and `created_at`.
+
+```bash
+companycam projects documents 123456
+companycam projects documents 123456 --all
+```
+
+Flags:
+- `--limit <n>` — max total documents (default: 25)
+- `--all` — fetch every document for the project
+
 ## Output
 
 All successful output is a single line of JSON to stdout. Errors go to stderr as `{"error":"<message>"}` and the process exits with code 1.

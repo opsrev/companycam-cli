@@ -12,7 +12,7 @@
 - `src/config.ts` — API key resolution from flag or env var
 - `src/api-client.ts` — Bearer-authenticated GET with 429 retry
 - `src/api-helpers.ts` — page/per_page pagination helper
-- `src/commands/projects.ts` — list, get, photos
+- `src/commands/projects.ts` — list, get, photos, comments, documents
 - `src/index.ts` — Commander wiring
 
 ## Conventions
